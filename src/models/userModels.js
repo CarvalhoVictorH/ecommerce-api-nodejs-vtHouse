@@ -1,5 +1,5 @@
-import mongoose from 'mongoose'
-
+const mongoose = require('mongoose')
+const bcrypt = require('bcrypt')
 // Declare the Schema of the Mongo model
 var userSchema = new mongoose.Schema({
     firstname: {
@@ -26,5 +26,6 @@ var userSchema = new mongoose.Schema({
     },
 })
 
-//Export the model
-export default mongoose.model('User', userSchema)
+userSchema.pre('save', async (next) => {})
+
+module.exports = mongoose.model('User', userSchema)

@@ -1,12 +1,12 @@
-import mongoose from 'mongoose'
+const { default: mongoose } = require('mongoose')
 
 const dbConnect = () => {
     try {
         const connect = mongoose.connect(process.env.DBMONGO_URL)
         console.log('Db Connected')
     } catch (error) {
-        console.log(error)
+        console.error(error)
     }
 }
 
-export default dbConnect
+module.exports = dbConnect

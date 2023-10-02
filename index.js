@@ -1,17 +1,21 @@
-import express from 'express'
-import 'dotenv/config'
-import dbConnect from './src/config/dbConnect'
-import authRouter from './src/routes/authRouter'
+const express = require('express')
+require('dotenv').config()
+const dbConnect = require('./src/config/dbConnect')
+const authRouter = require('./src/routes/authRouter')
+const bodyParser = require('body-parser')
+const { notfound, errorHandler } = require('./src/middlewares/error')
 const app = express()
 const port = process.env.PORT || 3333
 
 dbConnect()
-app.use(express.json())
-app.get('/', (req, res) => {
-    res.json({ mensagem: 'hello world' })
-})
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
 
 app.use('/api/user', authRouter)
+
+app.use(notfound)
+app.use(errorHandler)
+
 app.listen(port, () => {
     console.log(`api rodando na porta ${port}`)
 })
