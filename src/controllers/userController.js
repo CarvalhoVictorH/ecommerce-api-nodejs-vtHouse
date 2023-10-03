@@ -1,4 +1,5 @@
 const { generateToken } = require('../config/jwtToken')
+const { errorHandler } = require('../middlewares/error')
 const User = require('../models/userModels')
 const asyncHandler = require('express-async-handler')
 
@@ -31,4 +32,63 @@ const userLogin = asyncHandler(async (req, res) => {
     }
 })
 
-module.exports = { registerUser, userLogin }
+const listAllUsers = asyncHandler(async (req, res) => {
+    try {
+        const users = await User.find()
+        res.json(users)
+    } catch (error) {
+        throw new Error(error)
+    }
+})
+
+const listUserById = asyncHandler(async (req, res) => {
+    const { id } = req.params
+    try {
+        const user = await User.findById(id)
+        res.json(user)
+    } catch (error) {
+        throw new Error(error)
+    }
+})
+
+const updateUser = asyncHandler(async (req, res) => {
+    const { id } = req.params
+    try {
+        const updateUser = await User.findByIdAndUpdate(
+            id,
+            {
+                firstname: req?.body?.firstname,
+                lastname: req?.body?.lastname,
+                email: req?.body?.email,
+                mobile: req?.body?.mobile,
+            },
+            {
+                new: true,
+            }
+        )
+
+        res.json(updateUser)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({ message: 'Erro interno do servidor' })
+    }
+})
+
+const deleteUser = asyncHandler(async (req, res) => {
+    const { id } = req.params
+    try {
+        const user = await User.findByIdAndDelete(id)
+        return res.json(user)
+    } catch (error) {
+        throw new Error(error)
+    }
+})
+
+module.exports = {
+    registerUser,
+    userLogin,
+    listAllUsers,
+    listUserById,
+    deleteUser,
+    updateUser,
+}
