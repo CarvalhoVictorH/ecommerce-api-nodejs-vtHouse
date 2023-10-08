@@ -2,6 +2,7 @@ const { generateToken } = require('../config/jwtToken')
 const { errorHandler } = require('../middlewares/error')
 const User = require('../models/userModels')
 const asyncHandler = require('express-async-handler')
+const validateID = require('../utils/validateMongoDB')
 
 const registerUser = asyncHandler(async (req, res) => {
     const email = req.body.email
@@ -43,6 +44,7 @@ const listAllUsers = asyncHandler(async (req, res) => {
 
 const listUserById = asyncHandler(async (req, res) => {
     const { id } = req.params
+    validateID(id)
     try {
         const user = await User.findById(id)
         res.json(user)
@@ -52,10 +54,11 @@ const listUserById = asyncHandler(async (req, res) => {
 })
 
 const updateUser = asyncHandler(async (req, res) => {
-    const { id } = req.params
+    const { _id } = req.user
+    validateID(_id)
     try {
         const updateUser = await User.findByIdAndUpdate(
-            id,
+            _id,
             {
                 firstname: req?.body?.firstname,
                 lastname: req?.body?.lastname,
@@ -84,6 +87,45 @@ const deleteUser = asyncHandler(async (req, res) => {
     }
 })
 
+const blockedUser = asyncHandler(async (req, res) => {
+    const { id } = req.params
+    validateID(id)
+
+    try {
+        const blocked = await User.findByIdAndUpdate(
+            id,
+            {
+                isBlocked: true,
+            },
+            {
+                new: true,
+            }
+        )
+        res.json(blocked)
+    } catch (error) {
+        throw new Error(error)
+    }
+})
+
+const unBlockedUser = asyncHandler(async (req, res) => {
+    const { id } = req.params
+    validateID(id)
+    try {
+        const unBlocked = await User.findByIdAndUpdate(
+            id,
+            {
+                isBlocked: false,
+            },
+            {
+                new: true,
+            }
+        )
+        res.json(unBlocked)
+    } catch (error) {
+        throw new Error(error)
+    }
+})
+
 module.exports = {
     registerUser,
     userLogin,
@@ -91,4 +133,6 @@ module.exports = {
     listUserById,
     deleteUser,
     updateUser,
+    blockedUser,
+    unBlockedUser,
 }

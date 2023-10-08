@@ -9,7 +9,8 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
         try {
             if (token) {
                 const decoded = jwt.verify(token, process.env.SECRET_KEY)
-                const user = User.findById(decoded?.id)
+                const user = await User.findById(decoded?.id)
+                req.user = user
                 next()
             }
         } catch (error) {
@@ -22,4 +23,13 @@ const authMiddleware = asyncHandler(async (req, res, next) => {
     }
 })
 
-module.exports = { authMiddleware }
+const isAdmin = asyncHandler(async (req, res, next) => {
+    const { email } = req.user
+    const admin = await User.findOne({ email })
+    if (admin.role !== 'admin') {
+        throw new Error('Não autorizado, apenas administrator !')
+    } else {
+        next()
+    }
+})
+module.exports = { authMiddleware, isAdmin }
