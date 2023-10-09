@@ -3,6 +3,7 @@ const { errorHandler } = require('../middlewares/error')
 const User = require('../models/userModels')
 const asyncHandler = require('express-async-handler')
 const validateID = require('../utils/validateMongoDB')
+const { generateRefreshToken } = require('../config/refresh-jwt')
 
 const registerUser = asyncHandler(async (req, res) => {
     const email = req.body.email
@@ -20,6 +21,18 @@ const userLogin = asyncHandler(async (req, res) => {
     const { email, password } = req.body
     const findUser = await User.findOne({ email })
     if (findUser && (await findUser.isPasswordMatched(password))) {
+        const refreshToken = await generateRefreshToken(findUser?._id)
+        const updateUser = await User.findByIdAndUpdate(
+            findUser.id,
+            {
+                refreshToken: refreshToken,
+            },
+            { new: true }
+        )
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            maxAge: 72 * 60 * 60 * 1000,
+        })
         res.json({
             id: findUser?._id,
             firstname: findUser?.firstname,
@@ -126,6 +139,16 @@ const unBlockedUser = asyncHandler(async (req, res) => {
     }
 })
 
+const handleRefreshToken = asyncHandler(async (req, res) => {
+    const cookie = req.cookies
+    if (!cookie?.refreshToken) throw new Error('Não há Token nos Cookies')
+    const { refreshToken } = cookie
+    const user = await User.findOne({ refreshToken }).lean()
+    if (!user)
+        throw new Error('Não foi possivel encontrar o usuário pelo token')
+    res.json(user)
+})
+
 module.exports = {
     registerUser,
     userLogin,
@@ -135,4 +158,5 @@ module.exports = {
     updateUser,
     blockedUser,
     unBlockedUser,
+    handleRefreshToken,
 }

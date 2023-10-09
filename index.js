@@ -11,6 +11,7 @@ const port = process.env.PORT || 3333
 dbConnect()
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
+app.use(cookieParser())
 
 app.use('/api/user', authRouter)
 

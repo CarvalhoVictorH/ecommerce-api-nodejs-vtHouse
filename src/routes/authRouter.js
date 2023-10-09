@@ -7,6 +7,7 @@ const {
     updateUser,
     blockedUser,
     unBlockedUser,
+    handleRefreshToken,
 } = require('../controllers/userController')
 
 const express = require('express')
@@ -21,5 +22,6 @@ router.delete('/usuarios/:id', deleteUser)
 router.put('/usuarios/atualizar', authMiddleware, updateUser)
 router.put('/bloquear/:id', authMiddleware, isAdmin, blockedUser)
 router.put('/desbloquear/:id', authMiddleware, isAdmin, unBlockedUser)
+router.get('/refresh', handleRefreshToken)
 
 module.exports = router
